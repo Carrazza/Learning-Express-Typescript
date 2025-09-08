@@ -3,7 +3,7 @@ import mongoose, { mongo } from 'mongoose';
 import User  from './Models/User';
 const { MongoClient } = require('mongodb');
 import { rateLimit } from 'express-rate-limit'
-
+const Redis = require('ioredis')
 
 const app = express();
 app.use(express.json());
@@ -13,21 +13,36 @@ const PORT = 3000;
 const client = new MongoClient('mongodb://localhost:27017');
 const db = client.db("admin")
 
-const mongoo = mongoose.connect('mongodb://127.0.0.1:27017/admin');
+mongoose.connect('mongodb://127.0.0.1:27017/admin');
 
-const limiter = rateLimit({
-	windowMs: 15 * 60 * 1000, // 15 minutes
-	limit: 3, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
-	standardHeaders: 'draft-8', // draft-6: `RateLimit-*` headers; draft-7 & draft-8: combined `RateLimit` header
-	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
-	ipv6Subnet: 56, // Set to 60 or 64 to be less aggressive, or 52 or 48 to be more aggressive
-	// store: ... , // Redis, Memcached, etc. See below.
-})
+const redis = new Redis();
 
-// Apply the rate limiting middleware to all requests.
-app.use(limiter)
+const rateLimiter = async (req, res, next) => {
+  const ip = req.ip;
+  const path = req.path 
+  const method = req.method 
 
+  const currentTime = Date.now();
+  const key = `rate-limit:${ip}:${method}:${path}`;
 
+  const limit = 5; // Max requests
+  const windowTime = 1 * 60; // 15 minutes in seconds
+
+  const requests = await redis.incr(key);
+
+  if (requests === 1) {
+    // Set the expiration of the key to the time window on first request
+    await redis.expire(key, windowTime);
+  }
+
+  if (requests > limit) {
+    return res.status(429).json({ message: 'Too many requests, try again later.' });
+  }
+
+  next();
+};
+
+app.use(rateLimiter)
 
 app.get('/', async (_req, res) => {
 

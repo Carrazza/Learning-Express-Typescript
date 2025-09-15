@@ -10,8 +10,8 @@ const rateLimiter = async (req, res, next) => {
   const currentTime = Date.now();
   const key = `rate-limit:${ip}:${method}:${path}`;
 
-  const limit = 5; // Max requests
-  const windowTime = 1 * 60; // 15 minutes in seconds
+  const limit = 5; 
+  const windowTime = 1 * 60; 
 
   const requests = await redis.incr(key);
 
@@ -26,5 +26,8 @@ const rateLimiter = async (req, res, next) => {
 
   next();
 };
+
+
+
 
 export default rateLimiter

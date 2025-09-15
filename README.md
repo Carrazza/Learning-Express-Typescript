@@ -42,3 +42,7 @@ https://medium.com/@kizito917/jwt-refresh-token-implementation-with-node-js-post
 https://article.arunangshudas.com/how-do-you-ensure-request-validation-and-data-sanitization-in-a-production-express-js-application-90ab32fdab94
 
 https://medium.com/devmap/7-best-practices-for-sanitizing-input-in-node-js-e61638440096
+
+## Mongoose Schema tips 
+
+https://article.arunangshudas.com/advanced-modeling-in-mongoose-automate-your-models-in-node-js-214baf10c545
